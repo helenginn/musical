@@ -5,7 +5,14 @@
 #include <math.h>
 #include <alsa/asoundlib.h>
 #include "sound.h"
+#include "notes.h"
 #include "timing.h"
+
+typedef struct
+{
+	int left;
+	int right;
+} Harmony;
 
 int main(int argc, char **argv)
 {
@@ -18,28 +25,43 @@ int main(int argc, char **argv)
 	double repeat_freq = 0;
 	const size_t bufsize = 1;
 
-	double tonic = 0;
+	double xval = 0;
 	short buf[bufsize];
 
 	double wall = s_and_ms_as_double();
 	double now = 0;
 	
-	int notes[] = {0, 7, 7, 5, 3, 2, 0, -2, 0,
-		2, 3, 5, 7, 7, 7, 0, 0, 7, 7, 5, 3, 2, 0, -2,
-		0, 2, 3, 5, 7, 7, 7, 7, 8, 5, 7, 8, 10, 12,
-		7, 5, 3, 0, 2, 3, 5, 5};
-	size_t total = sizeof(notes);
+	Harmony notes[] = 
+	{{-5, 0}, {-5, 7}, {-5, 7},
+	 {-5, 5}, {-12, 3}, {-12, 2},
+	{-12, 0}, {-12, -2}, {-5, 0},
+	{-5, 2}, {-5, 3}, {-5, 5},
+	{-9, 7}, {-9, 7}, {-9, 7},
+	{-9, 0}, {-12, 0}, {-12, 7},
+	{-12, 7}, {-12, 5}, {-5, 3},
+	{-5, 2}, {-5, 0}, {-5, -2},
+	{-9, 0}, {-9, 2}, {-9, 3}, 
+	{-9, 5}, {-5, 7}, {-5, 7},
+	{-5, 7}, {-2, 7}, {0, 8},
+	{-4, 5}, {-2, 7}, {0, 8},
+	{2, 10}, {3, 12}, {-2, 7},
+	{-4, 5}, {-5, 3}, {-9, 0},
+	{-7, 2}, {-5, 3}, {-4, 5},
+	{-4, 5}};
+	
+	size_t total = sizeof(notes) / sizeof(Harmony);
 
-	int current = 0;
+	int c = 0;
 
-	while (current < total)
+	while (c < total)
 	{
 		repeat_freq = sampling / hz;
-		tonic += (1 / repeat_freq) * 2 * M_PI;
+		xval += (1 / repeat_freq) * 2 * M_PI;
 
-		short val = sin(tonic) * 2000;
+		short val = 0;
+		val += sound_contribution(notes[c].left, xval);
+		val += sound_contribution(notes[c].right, xval);
 
-		val *= 2;
 		buf[count] = val;
 		count++;
 		
@@ -51,14 +73,16 @@ int main(int argc, char **argv)
 		}
 
 		now = s_and_ms_as_double();
+
 		if (now - wall >= 0.2)
 		{
 			wall = now;
-			hz = 440 * pow(2, (notes[current] / 12.));
-			current++;
+			c++;
+			printf("%i\n", c);
 		}
 	}
 
+	snd_pcm_drain(playback_handle);
 	cleanup_sound(playback_handle);
 
 	return 0;

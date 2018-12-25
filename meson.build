@@ -5,6 +5,7 @@ sound_dep = dependency('alsa')
 
 executable('sound', 
 'main.c', 
+'notes.c', 
 'sound.c',
 'timing.c',
 dependencies: [m_dep, sound_dep])
