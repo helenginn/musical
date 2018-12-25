@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 		{
 			wall = now;
 			c++;
-			printf("%i\n", c);
+			printf("Loading note i\n", c);
 		}
 	}
 
