@@ -21,8 +21,8 @@ int main(int argc, char **argv)
 
 	int count = 0;
 	double sampling = 44100;
-	double hz = 440 * 1;
-	double repeat_freq = 0;
+	double hz = 440;
+	double repeat_freq = sampling / hz;
 	const size_t bufsize = 1;
 
 	double xval = 0;
@@ -55,8 +55,7 @@ int main(int argc, char **argv)
 
 	while (c < total)
 	{
-		repeat_freq = sampling / hz;
-		xval += (1 / repeat_freq) * 2 * M_PI;
+		xval += 2 * M_PI / repeat_freq;
 
 		short val = 0;
 		val += sound_contribution(notes[c].left, xval);
